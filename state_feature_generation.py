@@ -1,4 +1,6 @@
-
+# This scripts collects soccer logs for one team as expert from Wyscout, 
+# transforms to SPADL format, 
+# and exports state features for each action. 
 
 import tensorflow as tf
 
@@ -162,20 +164,24 @@ team_name_mapping = df_teams.set_index('team_id')['team_name'].to_dict()
 df_games['home_team_name'] = df_games['home_team_id'].map(team_name_mapping)
 df_games['away_team_name'] = df_games['away_team_id'].map(team_name_mapping)
 
-Bayern_games= df_games[(df_games['home_team_name'] == 'FC Bayern München') | 
+
+
+# imports all Bayern München games:
+
+expert_games= df_games[(df_games['home_team_name'] == 'FC Bayern München') | 
          (df_games['away_team_name'] == 'FC Bayern München')
         ]
 
-Bayern_games.shape
+expert_games.shape
 
-Bayern_games
 
-Bayern_game_ids= list(set(Bayern_games['game_id']))
 
-len(Bayern_game_ids)
+expert_games_ids= list(set(expert_games['game_id']))
 
-Bayern_df_events=[]
-for game_id in Bayern_game_ids:   
+len(expert_games_ids)
+
+expert_df_events=[]
+for game_id in expert_games_ids:   
   with pd.HDFStore('spadl.h5') as spadlstore:
       df_actions = spadlstore[f'actions/game_{game_id}']
       df_actions = (
@@ -187,14 +193,16 @@ for game_id in Bayern_game_ids:
           .reset_index()
           .rename(columns={'index': 'action_id'})
       )
-      Bayern_df_events.append(df_actions)
-  Bayern_actions= pd.concat(Bayern_df_events)
+      expert_df_events.append(df_actions)
+  expert_actions= pd.concat(expert_df_events)
 
-Bayern_actions
+expert_actions
 
-Bayern_actions.columns
+expert_actions.columns
 
-list(set(Bayern_actions['short_team_name']))
+list(set(expert_actions['short_team_name']))
+
+
 
 def nice_time(row):
     minute = int((row['period_id']>=2) * 45 + (row['period_id']>=3) * 15 + 
@@ -202,23 +210,25 @@ def nice_time(row):
     second = int(row['time_seconds'] % 60)
     return f'{minute}m{second}s'
 
-Bayern_actions['nice_time'] = Bayern_actions.apply(nice_time,axis=1)
 
-end_first_half = Bayern_actions[Bayern_actions.period_id == 1][['game_id','time_seconds']].groupby('game_id', as_index=False).max()
+
+expert_actions['nice_time'] = expert_actions.apply(nice_time,axis=1)
+
+end_first_half = expert_actions[expert_actions.period_id == 1][['game_id','time_seconds']].groupby('game_id', as_index=False).max()
 
 end_first_half
 
-end_second_half = Bayern_actions[Bayern_actions.period_id == 2][['game_id','time_seconds']].groupby('game_id', as_index=False).max()
+end_second_half = expert_actions[expert_actions.period_id == 2][['game_id','time_seconds']].groupby('game_id', as_index=False).max()
 
 end_second_half
 
-Bayern_actions[Bayern_actions.period_id== 2]
+expert_actions[expert_actions.period_id== 2]
 
-Bayern_actions= pd.merge(Bayern_actions, end_first_half[['game_id','time_seconds']].rename(columns={'time_seconds':'half_max_second'}), on='game_id')
+expert_actions= pd.merge(expert_actions, end_first_half[['game_id','time_seconds']].rename(columns={'time_seconds':'half_max_second'}), on='game_id')
 
-Bayern_actions= pd.merge(Bayern_actions, end_second_half[['game_id','time_seconds']].rename(columns={'time_seconds':'2_half_max_second'}), on='game_id')
+expert_actions= pd.merge(expert_actions, end_second_half[['game_id','time_seconds']].rename(columns={'time_seconds':'2_half_max_second'}), on='game_id')
 
-Bayern_actions.columns
+expert_actions.columns
 
 
 
@@ -230,12 +240,12 @@ def time_remaining(row):
     if row['period_id']==2:
         return int(row['2_half_max_second']) - int(row['time_seconds'])
     
-Bayern_actions['time_remaining'] = Bayern_actions.apply(time_remaining,axis=1)
+expert_actions['time_remaining'] = expert_actions.apply(time_remaining,axis=1)
 
 def action_name(row):
     return f"{row['action_id']}: {row['nice_time']} - {row['short_name']} {row['type_name']}"
 
-Bayern_actions['action_name'] = Bayern_actions.apply(action_name, axis=1)
+expert_actions['action_name'] = expert_actions.apply(action_name, axis=1)
 
 PITCH_LENGTH = 105
 PITCH_WIDTH = 68
@@ -243,30 +253,30 @@ PITCH_WIDTH = 68
 for side in ['start', 'end']:
     # Normalize the X location
     key_x = f'{side}_x'
-    Bayern_actions[f'{key_x}_norm'] = Bayern_actions[key_x] / PITCH_LENGTH
+    Bayern_actions[f'{key_x}_norm'] = expert_actions[key_x] / PITCH_LENGTH
 
     # Normalize the Y location
     key_y = f'{side}_y'
-    Bayern_actions[f'{key_y}_norm'] = Bayern_actions[key_y] / PITCH_WIDTH
+    expert_actions[f'{key_y}_norm'] = expert_actions[key_y] / PITCH_WIDTH
 
 GOAL_X = PITCH_LENGTH
 GOAL_Y = PITCH_WIDTH / 2
 
 for side in ['start', 'end']:
-    diff_x = GOAL_X - Bayern_actions[f'{side}_x']
-    diff_y = abs(GOAL_Y - Bayern_actions[f'{side}_y'])
-    Bayern_actions[f'{side}_distance_to_goal'] = np.sqrt(diff_x ** 2 + diff_y ** 2)
-    Bayern_actions[f'{side}_angle_to_goal'] = np.divide(diff_x, diff_y, 
+    diff_x = GOAL_X - expert_actions[f'{side}_x']
+    diff_y = abs(GOAL_Y - expert_actions[f'{side}_y'])
+    expert_actions[f'{side}_distance_to_goal'] = np.sqrt(diff_x ** 2 + diff_y ** 2)
+    expert_actions[f'{side}_angle_to_goal'] = np.divide(diff_x, diff_y, 
                                                     out=np.zeros_like(diff_x), 
                                                     where=(diff_y != 0))
 
-pd.get_dummies(Bayern_actions['type_name'])
+pd.get_dummies(expert_actions['type_name'])
 
 def add_action_type_dummies(df_actions):
     return df_actions.merge(pd.get_dummies(df_actions['type_name']), how='left',
                              left_index=True, right_index=True)
 
-Bayern_actions = add_action_type_dummies(Bayern_actions)
+expert_actions = add_action_type_dummies(expert_actions)
 
 def add_distance_features(df_actions):
     df_actions['diff_x'] = df_actions['end_x'] - df_actions['start_x']
@@ -281,26 +291,26 @@ def add_time_played(df_actions):
                              (df_actions['period_id'] == 4) * (15 * 60)
                              )
 
-add_distance_features(Bayern_actions)
-add_time_played(Bayern_actions)
+add_distance_features(expert_actions)
+add_time_played(expert_actions)
 
-Bayern_actions.shape
+expert_actions.shape
 
-Bayern_actions.to_excel('Bayern_actions.xlsx')
+expert_actions.to_excel('Bayern_actions.xlsx')
 
 from google.colab import files
-Bayern_actions.to_excel('Bayern_actions.xlsx')
+expert_actions.to_excel('Bayern_actions.xlsx')
 #files.download("data.csv")
 
 files.download("Bayern_actions.xlsx")
 
-Bayern_actions.columns
+expert_actions.columns
 
 
 
 # generate state features
 
-df_features=Bayern_actions[['period_id','bodypart_id','type_id', 'result_id','start_x_norm', 'start_y_norm', 'end_x_norm', 'end_y_norm',
+df_features=expert_actions[['period_id','bodypart_id','type_id', 'result_id','start_x_norm', 'start_y_norm', 'end_x_norm', 'end_y_norm',
        'start_distance_to_goal', 'start_angle_to_goal', 'end_distance_to_goal',
        'end_angle_to_goal', 'clearance', 'corner_crossed', 'corner_short', 'cross', 'dribble',
        'foul', 'freekick_crossed', 'freekick_short', 'goalkick',
@@ -310,6 +320,6 @@ df_features=Bayern_actions[['period_id','bodypart_id','type_id', 'result_id','st
 
 df_features
 
-df_features.to_excel('Bayern_features.xlsx')
+df_features.to_excel('expert_features.xlsx')
 
-files.download("Bayern_features.xlsx")
+files.download("expert_features.xlsx")
