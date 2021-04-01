@@ -253,7 +253,7 @@ PITCH_WIDTH = 68
 for side in ['start', 'end']:
     # Normalize the X location
     key_x = f'{side}_x'
-    Bayern_actions[f'{key_x}_norm'] = expert_actions[key_x] / PITCH_LENGTH
+    expert_actions[f'{key_x}_norm'] = expert_actions[key_x] / PITCH_LENGTH
 
     # Normalize the Y location
     key_y = f'{side}_y'
@@ -296,13 +296,13 @@ add_time_played(expert_actions)
 
 expert_actions.shape
 
-expert_actions.to_excel('Bayern_actions.xlsx')
+expert_actions.to_excel('expert_actions.xlsx')
 
 from google.colab import files
-expert_actions.to_excel('Bayern_actions.xlsx')
+expert_actions.to_excel('expert_actions.xlsx')
 #files.download("data.csv")
 
-files.download("Bayern_actions.xlsx")
+files.download("expert_actions.xlsx")
 
 expert_actions.columns
 
