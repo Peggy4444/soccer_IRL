@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
+# This scripts export states and actions, and prepares the array of inputs to the neural networks for behavioral cloning
 import tensorflow as tf
 tf.test.gpu_device_name()
 
@@ -38,43 +36,18 @@ import os
 import io
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
 path_to_add = os.path.dirname(os.path.abspath(__file__)) + '/..'
 sys.path = [path_to_add] + sys.path
 
-
-# In[ ]:
-
-
 directory= 'soccer_dataset/'
-
-
-# In[ ]:
-
 
 df_state_features = pd.read_excel(directory +'expert_team_features.xlsx')
 expert_actions = pd.read_excel(directory +'expert_actions.xlsx')
-
-
-# In[ ]:
-
 
 # extracting possession ending indexes: possession can be transferred if and only if the team is not in
 #the possession of the ball over two consecutive events. Thus, the unsuccessful
 #touches of the opponent in fewer than 3 consecutive actions are not considered
 #as a possession loss.
-
-
-# In[2]:
-
 
 def End_list_index_maker(expert_actions):
     End_list_index=[]
@@ -84,9 +57,6 @@ def End_list_index_maker(expert_actions):
     return (End_list_index)
 
 
-# In[3]:
-
-
 def Expert_list_index_maker(expert_actions):
     Expert_End_list_index=[]
     for i in End_list_index:
@@ -94,10 +64,6 @@ def Expert_list_index_maker(expert_actions):
         if Expert_actions['short_team_name'].iloc[i]== "Bayern München" :
             Expert_End_list_index.append(i)
     return (Expert_End_list_index)
-        
-
-
-# In[4]:
 
 
 def Opponent_list_index_maker(expert_actions):
@@ -107,8 +73,6 @@ def Opponent_list_index_maker(expert_actions):
             Opponent_End_list_index.append(i)
     return (Opponent_End_list_index)
 
-
-# In[5]:
 
 
 def expert_possession_list_maker(expert_actions, Expert_End_list_index, Opponent_End_list_index):
@@ -120,8 +84,6 @@ def expert_possession_list_maker(expert_actions, Expert_End_list_index, Opponent
     return all_possessions
 
 
-# In[6]:
-
 
 def Opponent_possession_list_maker(expert_actions, Expert_End_list_index, Opponent_End_list_index):
     all_possessions2=[]
@@ -132,21 +94,12 @@ def Opponent_possession_list_maker(expert_actions, Expert_End_list_index, Oppone
     return all_possessions2
 
 
-# In[ ]:
-
-
 expert_possessions= expert_possession_list_maker(expert_actions, Expert_End_list_index, Opponent_End_list_index)
 opponent_possessions= Opponent_possession_list_maker(expert_actions, Expert_End_list_index, Opponent_End_list_index)
 
 
-# In[ ]:
-
 
 # extracting ending actions: (shot for expert team possessions), (tackles, interceptions, clearances for opponent teams possessions)
-
-
-# In[ ]:
-
 
 def offensive_label_list_maker(expert_actions, Expert_End_list_index):
     possessions_label_offensive=[]
@@ -156,20 +109,10 @@ def offensive_label_list_maker(expert_actions, Expert_End_list_index):
     return possessions_label_offensive
 
 
-# In[ ]:
-
-
 #offensive actions 
 
 
-# In[ ]:
-
-
 offensive_possession_labels=offensive_label_list_maker(expert_actions, Expert_End_list_index)
-
-
-# In[ ]:
-
 
 def defensive_label_list_maker(expert_actions, Opponent_End_list_index):
     possessions_label_defensive=[]
@@ -178,33 +121,17 @@ def defensive_label_list_maker(expert_actions, Opponent_End_list_index):
         possessions_label_defensive.append(labels_defensive)
     return possessions_label_defensive
 
-
-# In[ ]:
-
-
 #defensive acttions
 
-
-# In[ ]:
-
-
 defensive_possession_labels=defensive_label_list_maker(expert_actions, Opponent_End_list_index)
-
-
-# In[ ]:
 
 
 #convert to array
 
 
-# In[ ]:
-
 
 all_Opponent_possessions_array= np.array(Opponent_possessions)
 all_Expert_possessions_array= np.array(expert_possessions)
-
-
-# In[ ]:
 
 
 for index, item in enumerate(offensive_possession_labels):
@@ -212,9 +139,6 @@ for index, item in enumerate(offensive_possession_labels):
         offensive_possession_labels[index] = 1
     elif item != 'shot':
         offensive_possession_labels[index] = 0
-
-
-# In[ ]:
 
 
 for index, item in enumerate(defensive_possession_labels):
@@ -228,15 +152,7 @@ for index, item in enumerate(defensive_possession_labels):
         defensive_possession_labels[index] = 3
         
 
-
-# In[ ]:
-
-
 # saving the states and actions
-
-
-# In[ ]:
-
 
 pickle.dump(defensive_possession_labels, open(directory + 'defensive_actions.pkl', 'wb'))
 pickle.dump(offensive_possession_labels, open(directory + 'offensive_actions.pkl', 'wb'))
