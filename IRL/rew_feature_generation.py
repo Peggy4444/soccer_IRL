@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# This script prepares the proposed reward features dataset for computing feature expectation
 
 
 import pandas as pd
@@ -9,7 +9,6 @@ import pickle
 import os
 
 
-# In[ ]:
 
 
 defensive_possession_labels = open('defensive_actions.pkl','rb')
@@ -25,7 +24,6 @@ all_Expert_possessions_array = open('expert_states.pkl','rb')
 all_Expert_possessions_array = pickle.load(all_Expert_possessions_array, encoding='latin1')
 
 
-# In[ ]:
 
 
 path_to_add = os.path.dirname(os.path.abspath(__file__)) + '/..'
@@ -38,13 +36,11 @@ players_mv = open('player_market_value.pkl','rb')
 players_mv = pickle.load(market_value, encoding='latin1')
 
 
-# In[ ]:
 
 
 # generate goal diff feature
 
 
-# In[ ]:
 
 
 for index, row in df_rew_features.iterrows():
@@ -54,17 +50,12 @@ for index, row in df_rew_features.iterrows():
         df_rew_features['Bayern_goals'].iloc[index]=0
 
 
-# In[ ]:
-
-
 for index, row in df_rew_features.iterrows():
     if row['short_team_name']!='Bayern München' and row['type_name']=='shot' and row['result_name']=='success' :
         df_rew_features['Opponent_goals'].iloc[index]=1
     else:
         df_rew_features['Opponent_goals'].iloc[index]=0
 
-
-# In[1]:
 
 
 def goal_diff_maker(df_rew_features):
@@ -74,13 +65,7 @@ def goal_diff_maker(df_rew_features):
     return(df)
 
 
-# In[ ]:
-
-
 # Generate players market value
-
-
-# In[2]:
 
 
 def player_intention_maker(df_rew_features):
@@ -89,13 +74,8 @@ def player_intention_maker(df_rew_features):
     return(df_rew_features)
 
 
-# In[ ]:
-
-
 # Generate pre_game features (H/A, rankings)
 
-
-# In[ ]:
 
 
 data_files = {
@@ -105,8 +85,6 @@ data_files = {
     'teams': 'https://ndownloader.figshare.com/files/15073697'  # JSON file
 }
 
-
-# In[ ]:
 
 
 from tqdm.notebook import tqdm
@@ -122,10 +100,6 @@ for url in tqdm(data_files.values()):
     if is_zipfile(file_local):
         with ZipFile(file_local) as zip_file:
             zip_file.extractall()
-
-
-# In[ ]:
-
 
 def read_json_file(filename):
     with open(filename, 'rb') as json_file:
@@ -146,9 +120,6 @@ competitions = [
 ]
 
 
-# In[ ]:
-
-
 from io import BytesIO
 dfs_matches = []
 for competition in competitions:
@@ -158,9 +129,6 @@ for competition in competitions:
     df_matches = pd.read_json(json_matches)
     dfs_matches.append(df_matches)
 df_matches = pd.concat(dfs_matches)
-
-
-# In[ ]:
 
 
 bayern_games = [2516739, 2516997, 2516869, 2517000, 2516874, 2516751, 2516757,
@@ -173,15 +141,11 @@ Bayern_df = df_matches[df_matches['wyId'].isin(bayern_games)]
 Bayern_df
 
 
-# In[ ]:
-
-
 side_mapping = bayern_matches.set_index('wyId')['expert_side'].to_dict()
 bayern_rank_mapping = bayern_matches.set_index('wyId')['expert_rank'].to_dict()
 opponent_rank_mapping = bayern_matches.set_index('wyId')['opponent_rank'].to_dict()
 
 
-# In[3]:
 
 
 def pre_game_feature_maker(df_rew_features):
@@ -197,10 +161,5 @@ def pre_game_feature_maker(df_rew_features):
     df_rew_features['opponent_rank_inverse']= 1/ df_rew_features['opponent_rank']
     df_rew_features['norm_time_remaining']= df_rew_features['time_remaining']/ 5400
     return(df_rew_features)
-
-
-# In[ ]:
-
-
 
 
