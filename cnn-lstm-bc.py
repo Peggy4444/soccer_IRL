@@ -75,6 +75,49 @@ y_train= to_categorical(y_train)
 y_test= to_categorical(y_test)
 
 
+%%time
+from keras.layers.convolutional import Conv1D 
+import matplotlib.pyplot as plt
+
+#from keras.layers import Conv1D, MaxPoling1D
+off_model = Sequential()
+off_model.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(10,36)))
+model.add(MaxPooling1D(pool_size=1))
+off_model.add(LSTM(100))
+off_model.add(Dense(2, activation='sigmoid'))
+off_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+print(off_model.summary())
+off_history= off_model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=64)
+# Final evaluation of the model
+scores = off_model.evaluate(X_test, y_test, verbose=0)
+print(off_model.summary())
+# Final evaluation of the model
+print("accuracy: %.2f%%" % (scores[1]*100))
+print(off_history.history.keys())
+# Final evaluation of the model
+#scores = def_model.evaluate(X_test1, y_test1, verbose=0)
+print(off_model.summary())
+# Final evaluation of the model
+#print("accuracy: %.2f%%" % (scores[1]*100))
+
+# summarize history for accuracy
+plt.plot(off_history.history['accuracy'])
+plt.plot(off_history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(off_history.history['loss'])
+plt.plot(off_history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+
 get_ipython().run_cell_magic('time', '', 'from keras.layers.convolutional import Conv1D \nimport matplotlib.pyplot as plt\n\n#from keras.layers import Conv1D, MaxPoling1D\noff_model = Sequential()\noff_model.add(Conv1D(filters=32, kernel_size=3, activation=\'relu\', input_shape=(10,36)))\nmodel.add(MaxPooling1D(pool_size=1))\noff_model.add(LSTM(100))\noff_model.add(Dense(2, activation=\'sigmoid\'))\noff_model.compile(loss=\'categorical_crossentropy\', optimizer=\'adam\', metrics=[\'accuracy\'])\nprint(off_model.summary())\noff_history= off_model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=64)\n# Final evaluation of the model\nscores = off_model.evaluate(X_test, y_test, verbose=0)\nprint(off_model.summary())\n# Final evaluation of the model\nprint("accuracy: %.2f%%" % (scores[1]*100))\nprint(off_history.history.keys())\n# Final evaluation of the model\n#scores = def_model.evaluate(X_test1, y_test1, verbose=0)\nprint(off_model.summary())\n# Final evaluation of the model\n#print("accuracy: %.2f%%" % (scores[1]*100))\n\n# summarize history for accuracy\nplt.plot(off_history.history[\'accuracy\'])\nplt.plot(off_history.history[\'val_accuracy\'])\nplt.title(\'model accuracy\')\nplt.ylabel(\'accuracy\')\nplt.xlabel(\'epoch\')\nplt.legend([\'train\', \'test\'], loc=\'upper left\')\nplt.show()\n# summarize history for loss\nplt.plot(off_history.history[\'loss\'])\nplt.plot(off_history.history[\'val_loss\'])\nplt.title(\'model loss\')\nplt.ylabel(\'loss\')\nplt.xlabel(\'epoch\')\nplt.legend([\'train\', \'test\'], loc=\'upper left\')\nplt.show()')
 
 
@@ -103,6 +146,43 @@ X_test1 = sequence.pad_sequences(X_test1, maxlen=10)
 from keras.utils import to_categorical
 y_train1= to_categorical(y_train1)
 y_test1= to_categorical(y_test1)
+
+%%time
+from keras.layers.convolutional import Conv1D 
+import matplotlib.pyplot as plt
+
+#from keras.layers import Conv1D, MaxPoling1D
+def_model = Sequential()
+def_model.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(10,36)))
+model.add(MaxPooling1D(pool_size=1))
+def_model.add(LSTM(100))
+def_model.add(Dense(4, activation='softmax'))
+def_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+print(def_model.summary())
+def_history= def_model.fit(X_train1, y_train1, validation_data=(X_test1, y_test1), epochs=10, batch_size=64)
+print(def_history.history.keys())
+# Final evaluation of the model
+scores = def_model.evaluate(X_test1, y_test1, verbose=0)
+print(def_model.summary())
+# Final evaluation of the model
+print("accuracy: %.2f%%" % (scores[1]*100))
+
+# summarize history for accuracy
+plt.plot(def_history.history['accuracy'])
+plt.plot(def_history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(def_history.history['loss'])
+plt.plot(def_history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
 
 
 !mkdir -p saved_model
