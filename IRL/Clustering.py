@@ -14,6 +14,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 
+# six index for the 6 recovered reward weights:
 features_index = [[0,1,2,3,4,5]]
 agents = ['Bayer Leverkusen', 'Augsburg', 'Eintracht Frankfurt', 'Borussia M’gladbach', 'K¨oln', 'Werder Bremen', 'Hoffenheim', 'Hannover 96', 'Stuttgart', 'Mainz 05'
           , 'Schalke 04', 'Wolfsburg', 'Hertha BSC', 'Freiburg', 'Hamburger SV', 'RB Leipzig', 'Borussia Dortmund']
