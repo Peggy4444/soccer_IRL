@@ -3,7 +3,7 @@
 
 
 
-# This script requires the computed feature expectation, and performs clustering
+# This script requires the recovered reward weights from GIRL, computed feature expectation, and performs clustering
 
 
 
