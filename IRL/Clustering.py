@@ -24,7 +24,7 @@ num_agents=agents.shape[0]
 
 
 
-X = feature_expectations[:num_agents,features_index[0]]
+X = all_weights[:num_agents,features_index[0]]
 wcss = []
 for i in range(2, 10):
     kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
@@ -51,7 +51,7 @@ all_weights_arr=np.array(all_weights)
 num_agents = 16
 num_clusters = 3
 for weight in features_index[0]:
-    X = feature_expectations[:num_agents,weight]
+    X = all_weights[:num_agents,weight]
     kmeans = KMeans(n_clusters=num_clusters, init='k-means++', max_iter=300, n_init=10, random_state=0)
     kmeans.fit(X)
     print("Team expert:")
